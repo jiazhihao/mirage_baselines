@@ -182,6 +182,7 @@ def _attn_fwd(Q, K, V, sm_scale, M, Out,  #
 empty = torch.empty(128, device="cuda")
 
 
+rms_norm64 = torch.nn.RMSNorm(64, device='cuda:0', dtype=torch.float16)
 class _attention(torch.autograd.Function):
 
     @staticmethod
@@ -199,6 +200,8 @@ class _attention(torch.autograd.Function):
         stage = 3 if causal else 1
         grid = (triton.cdiv(q.shape[2], BLOCK_M), q.shape[0] * q.shape[1], 1)
         M = torch.empty((q.shape[0], q.shape[1], q.shape[2]), device=q.device, dtype=torch.float32)
+        q = rms_norm64(q)
+        k = rms_norm64(k)
         _attn_fwd[grid](
             q, k, v, sm_scale, M, o,  #
             q.stride(0), q.stride(1), q.stride(2), q.stride(3),  #
