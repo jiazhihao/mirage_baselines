@@ -15,8 +15,9 @@ if __name__ == "__main__":
     nV = get_rms_norm(graph, V)
     A = graph.matmul(nQ, K)
     E = graph.exp(input=A)
-    S = graph.reduce_sum(input=E, axes=(2,))
-    D = graph.div(E, S)
+    #S = graph.reduce_sum(input=E, axes=(2,))
+    S = E
+    D = graph.div(x=E, y=S)
     O = graph.matmul(D, nV)
     
     taso.optimize(graph, budget=1)

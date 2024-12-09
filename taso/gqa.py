@@ -9,9 +9,10 @@ if __name__ == "__main__":
     V = graph.new_input(dims=(2 * batch_size, 4096, 64))
     A = graph.matmul(input=Q, weight=K)
     E = graph.exp(input=A)
-    S = graph.reduce_sum(input=E, axes=(2,))
+    #S = graph.reduce_sum(input=E, axes=(2,))
+    S = E
     D = graph.div(x=E, y=S)
     O = graph.matmul(input=D, weight=V)
     
-    taso.optimized(graph, budget=1)
+    taso.optimize(graph, budget=1)
     
