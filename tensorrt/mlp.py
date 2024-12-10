@@ -9,11 +9,11 @@ builder = trt.Builder(TRT_LOGGER)
 network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
 config = builder.create_builder_config()
 runtime = trt.Runtime(TRT_LOGGER)
-config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, 1024*1024*1024)
+config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, 10*1024*1024*1024)
 
-A_shape = [8192, 8]
-B_shape = [8, 8192]
-X_shape = [16, 8192]
+A_shape = [4096, 256]
+B_shape = [256, 4096]
+X_shape = [16, 4096]
 
 A = network.add_input("A", dtype=trt.float32, shape=A_shape)
 B = network.add_input("B", dtype=trt.float32, shape=B_shape)

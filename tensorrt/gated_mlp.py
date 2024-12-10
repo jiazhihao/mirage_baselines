@@ -19,16 +19,15 @@ config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, 10*1024*1024*1024)
 
 A_shape = [4096, 4096]
 B_shape = [4096, 4096]
-X_shape = [16, 4096]
+X_shape = [1, 4096]
 
-A = network.add_input("A", dtype=trt.float32, shape=A_shape)
-B = network.add_input("B", dtype=trt.float32, shape=B_shape)
-X = network.add_input("X", dtype=trt.float32, shape=X_shape)
+A = network.add_input("A", dtype=trt.float16, shape=A_shape)
+B = network.add_input("B", dtype=trt.float16, shape=B_shape)
+X = network.add_input("X", dtype=trt.float16, shape=X_shape)
 
 C = network.add_matrix_multiply(X, trt.MatrixOperation.NONE, A, trt.MatrixOperation.NONE)
-#D = network.add_matrix_multiply(X, trt.MatrixOperation.NONE, B, trt.MatrixOperation.NONE)
-#O = network.add_elementwise(C.get_output(0), D.get_output(0), trt.ElementWiseOperation.SUM)
-O = C
+D = network.add_matrix_multiply(X, trt.MatrixOperation.NONE, B, trt.MatrixOperation.NONE)
+O = network.add_elementwise(C.get_output(0), D.get_output(0), trt.ElementWiseOperation.SUM)
 
 network.mark_output(O.get_output(0))
 

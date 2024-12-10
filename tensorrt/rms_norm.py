@@ -4,7 +4,6 @@ import numpy as np
 from common_runtime import *
 from typing import Optional, List, Union
 TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
-
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -18,20 +17,18 @@ config = builder.create_builder_config()
 runtime = trt.Runtime(TRT_LOGGER)
 config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, 1024*1024*1024)
 
-W_shape = [256, 4096]
-A_shape = [256, 16]
-B_shape = [16, 4096]
-X_shape = [args.batch, 256]
+X_shape = [2*args.batch, 4096]
+scale_shape = [1, 4096]
+bias_shape = [1, 4096]
+W_shape = [4096, 4096]
 
-W = network.add_input("W", dtype=trt.float16, shape=W_shape)
-A = network.add_input("A", dtype=trt.float16, shape=A_shape)
-B = network.add_input("B", dtype=trt.float16, shape=B_shape)
+scale = network.add_input("scale", dtype=trt.float16, shape=scale_shape)
+bias = network.add_input("bias", dtype=trt.float16, shape=bias_shape)
 X = network.add_input("X", dtype=trt.float16, shape=X_shape)
+W = network.add_input("W", dtype=trt.float16, shape=W_shape)
 
-C = network.add_matrix_multiply(X, trt.MatrixOperation.NONE, A, trt.MatrixOperation.NONE)
-D = network.add_matrix_multiply(C.get_output(0), trt.MatrixOperation.NONE, B, trt.MatrixOperation.NONE)
-E = network.add_matrix_multiply(X, trt.MatrixOperation.NONE, W, trt.MatrixOperation.NONE)
-O = network.add_elementwise(E.get_output(0), D.get_output(0), trt.ElementWiseOperation.SUM)
+S = network.add_normalization(X, scale, bias, (1 << 0 | 1 << 1))
+O = network.add_matrix_multiply(S.get_output(0), trt.MatrixOperation.NONE, W, trt.MatrixOperation.NONE)
 
 network.mark_output(O.get_output(0))
 

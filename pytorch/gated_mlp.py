@@ -18,6 +18,12 @@ starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_t
 repetitions = 1024
 timings=np.zeros((repetitions,1))
 
+for rep in range(128):
+      O1 = torch.matmul(X, A)
+      O2 = torch.matmul(X, B)
+      O1 = silu(O1)
+      O = torch.mul(O1, O2)
+
 with torch.no_grad():
   for rep in range(repetitions):
       starter.record()
